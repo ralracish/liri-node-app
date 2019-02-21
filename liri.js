@@ -1,11 +1,9 @@
-require("dotenv").config();
+// require("dotenv").confnig();
 var axios = require("axios");
-
-// var keys = require("./keys.js");
-
-// var spotify = new Spotify(keys.spotify);
-
-
+var keys = require("./keys.js");
+var spotify = require("spotify");
+var request = require("request")
+var fs = require("fs")
 // 9. Make it so liri.js can take in one of the following commands:
 
 //    * `concert-this`
@@ -20,12 +18,45 @@ var axios = require("axios");
 
 // 1. `node liri.js concert-this <artist/band name here>`
 
-var command=process.argv[2]
-var concert = process.argv[3]
+var nodeArgv=process.argv;
+var command=process.argv[2];
 
-if (concert="concert-this"){
+var a = "";
 
+for(var i=3; i<nodeArgv.length; i++){
+  if(i>3 && i<nodeArgv.length){
+    a = a + "+" + nodeArgv[i];
+  } else{
+      a = a + nodeArgv[i];
+  }
 }
+
+
+switch(command){
+  case "spotify-this-song":
+    if(a){
+      spotifySong(a);
+    } else {
+      spotifySong("The Sign");
+    }
+  break;
+
+  case "movie-this":
+    if(a){
+      omdbData(a)
+    } else{
+      omdbData("Mr. Nobody")
+    }
+    break;
+    case "do-what-it-says":
+    doThing();
+  break;
+
+  default:
+    console.log("{Please enter a command: spotify-this-song, movie-this, do-what-it-says}");
+  break;
+}
+
 //    * This will search the Bands in Town Artist Events API (`"https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp"`) for an artist and render the following information about each event to the terminal:
 
 //      * Name of the venue
@@ -47,60 +78,33 @@ if (concert="concert-this"){
 
 //      * The song's name
 
-//      * A preview link of the song from Spotify
-
-//      * The album that the song is from
-
-//    * If no song is provided then your program will default to "The Sign" by Ace of Base.
-
-//    * You will utilize the [node-spotify-api](https://www.npmjs.com/package/node-spotify-api) package in order to retrieve song information from the Spotify API.
-
-//    * The Spotify API requires you sign up as a developer to generate the necessary credentials. You can follow these steps in order to generate a **client id** and **client secret**:
-
-//    * Step One: Visit <https://developer.spotify.com/my-applications/#!/>
-
-//    * Step Two: Either login to your existing Spotify account or create a new one (a free account is fine) and log in.
-
-//    * Step Three: Once logged in, navigate to <https://developer.spotify.com/my-applications/#!/applications/create> to register a new application to be used with the Spotify API. You can fill in whatever you'd like for these fields. When finished, click the "complete" button.
-
-//    * Step Four: On the next screen, scroll down to where you see your client id and client secret. Copy these values down somewhere, you'll need them to use the Spotify API and the [node-spotify-api package](https://www.npmjs.com/package/node-spotify-api).
-
-// 3. `node liri.js movie-this '<movie name here>'`
-// Store all of the arguments in an array
-var movie-this = process.argv[2];
-var movieName = process.argv[3];
-
-// Create an empty variable for holding the movie name
-var movieName = "";
-
-// Loop through all the words in the node argument
-// And do a little for-loop magic to handle the inclusion of "+"s
-for (var i = 2; i < nodeArgs.length; i++) {
-  if (i > 2 && i < nodeArgs.length) {
-    movieName = movieName + "+" + nodeArgs[i];
-  }
-  else {
-    movieName += nodeArgs[i];
-  }
-}
-
 // Then run a request with axios to the OMDB API with the movie specifiedttp://www.omdbapi.com/?i=tt3896198
-var queryUrl = "http://www.omdbapi.com/i=tt3896198" + movieName + "&apikey=ea24388d";
+function omdbData(movie){
+  var omdbURL = 'http://www.omdbapi.com/?t=' + movie + '&plot=short&tomatoes=true';
 
-// This line is just to help us debug against the actual URL.
-console.log(queryUrl);
+  request(omdbURL, function (error, response, body){
+    if(!error && response.statusCode == 200) {
+      var body = JSON.parse(body);
+      // var queryUrl = "http://www.omdbapi.com/i=tt3896198" + movieName + "&apikey=ea24388d";
 
-axios.get(queryUrl).then(
-  function(response) {
-    console.log("Title: " + response.data.Title)
-    console.log("Year: " + response.data.Year);
-    console.log("Rating: " + response.data.Rating);
-    console.log("Rotten Tomatoes Rating: " + response.data.tomatoRating);
-    console.log("Country: " + response.data.Country);
-    console.log("Language: " + response.data.Language);
-    console.log("Plot: " + response.data.Plot);
-    console.log("Actors: " + response.data.Actors);
-  });
+    console.log("Title: " + body.Title)
+    console.log("Year: " + body.Year);
+    console.log("Rating: " + body.Rating);
+    console.log("Rotten Tomatoes Rating: " + body.tomatoRating);
+    console.log("Country: " + body.Country);
+    console.log("Language: " + body.Language);
+    console.log("Plot: " + body.Plot);
+    console.log("Actors: " + body.Actors);
+    } else{
+    console.log('Error occurred.')
+    }
+    if(movie === "Mr. Nobody"){
+      console.log("-----------------------");
+      console.log("If you haven't watched 'Mr. Nobody,' then you should: http://www.imdb.com/title/tt0485947/");
+      console.log("It's on Netflix!");
+    }
+  })
+};
 
 //    * If the user doesn't type a movie in, the program will output data for the movie 'Mr. Nobody.'
 
