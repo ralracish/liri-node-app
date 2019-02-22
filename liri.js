@@ -1,3 +1,4 @@
+//require necessary modules
 require("dotenv").config();
 var axios = require("axios");
 var keys = require("./keys.js");
@@ -6,11 +7,13 @@ var spotify = new Spotify(keys.spotify);
 var fs = require("fs");
 var moment = require("moment");
 
+//Create commands and parameters
 var command=process.argv[2];
 var name=process.argv.slice(3).join(" ");
 console.log(command);
 console.log(name);
 
+//Use switch to assign commands and functions
 switch(command){
   case "spotify-this-song":
           spotifySong(name);
@@ -28,7 +31,7 @@ switch(command){
   break;
 }
 
-
+//Run a request using spotify search api to get an artist name and song
 function spotifySong(name){
   spotify.search({ type: 'track', query: name }, function(err, data) {
     if (err) {
@@ -76,52 +79,18 @@ function omdbData(movie){
   });
 }
 
-function doThing(name){
-}
+//  Using the `fs` Node package, LIRI will take the text inside of random.txt and then use it to call one of LIRI's commands.
+//  It should run `spotify-this-song` for "I Want it That Way," as follows the text in `random.txt`.
 
-fs.readFile("random.txt", "utf8", function(err, data) {
-  if (err) {
-    return console.log(err);
-  }
-
- });
-// 4. `node liri.js do-what-it-says`
-
-//    * Using the `fs` Node package, LIRI will take the text inside of random.txt and then use it to call one of LIRI's commands.
-
-//      * It should run `spotify-this-song` for "I Want it That Way," as follows the text in `random.txt`.
-
-//      * Edit the text in random.txt to test out the feature for movie-this and concert-this.
-unction doAsYerTold() {
-	// Append the command to the log file
-	fs.appendFile('./log.txt', 'User Command: node liri.js do-what-it-says\n\n', (err) => {
-		if (err) throw err;
-	});
-
-	// Read in the file containing the command
-	fs.readFile('./random.txt', 'utf8', function (error, data) {
-		if (error) {
-			console.log('ERROR: Reading random.txt -- ' + error);
-			return;
-		} else {
-			// Split out the command name and the parameter name
-			var cmdString = data.split(',');
-			var command = cmdString[0].trim();
-			var param = cmdString[1].trim();
-
-			switch(command) {
-				case 'my-tweets':
-					retrieveTweets(); 
-					break;
-
-				case 'spotify-this-song':
-					spotifySong(param);
-					break;
-
-				case 'movie-this':
-					retrieveOBDBInfo(param);
-					break;
-			}
-		}
-	});
+function doThing() {
+  fs.readFile('random.txt', 'utf8', function(error, data) {
+      if (error) {
+          console.log(error);
+      } else {
+          var dataArr = data.split(',');
+          if (dataArr[0] === 'spotify-this-song') {
+              spotifySong(dataArr[1]);
+          }
+      }
+  });
 }
