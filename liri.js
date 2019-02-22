@@ -1,119 +1,90 @@
-// require("dotenv").confnig();
+require("dotenv").config();
 var axios = require("axios");
 var keys = require("./keys.js");
-var spotify = require("spotify");
-var request = require("request")
-var fs = require("fs")
-// 9. Make it so liri.js can take in one of the following commands:
+var Spotify = require('node-spotify-api');
+var spotify = new Spotify(keys.spotify);
+var fs = require("fs");
+var moment = require("moment");
 
-//    * `concert-this`
-
-//    * `spotify-this-song`
-
-//    * `movie-this`
-
-//    * `do-what-it-says`
-
-// ### What Each Command Should Do
-
-// 1. `node liri.js concert-this <artist/band name here>`
-
-var nodeArgv=process.argv;
 var command=process.argv[2];
-
-var a = "";
-
-for(var i=3; i<nodeArgv.length; i++){
-  if(i>3 && i<nodeArgv.length){
-    a = a + "+" + nodeArgv[i];
-  } else{
-      a = a + nodeArgv[i];
-  }
-}
-
+var name=process.argv.slice(3).join(" ");
+console.log(command);
+console.log(name);
 
 switch(command){
   case "spotify-this-song":
-    if(a){
-      spotifySong(a);
-    } else {
-      spotifySong("The Sign");
-    }
+          spotifySong(name);
   break;
-
   case "movie-this":
-    if(a){
-      omdbData(a)
-    } else{
-      omdbData("Mr. Nobody")
-    }
+          omdbData(name);
     break;
     case "do-what-it-says":
-    doThing();
+          doThing(name);
   break;
-
+  case "concert-this":
+          concertThis(name);
   default:
     console.log("{Please enter a command: spotify-this-song, movie-this, do-what-it-says}");
   break;
 }
 
-//    * This will search the Bands in Town Artist Events API (`"https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp"`) for an artist and render the following information about each event to the terminal:
 
-//      * Name of the venue
+function spotifySong(name){
+  spotify.search({ type: 'track', query: name }, function(err, data) {
+    if (err) {
+      return console.log('Error occurred: ' + err);
+    }
+    console.log("Artist: " + data.tracks.items[0].album.artists[0].name)
+    console.log("Song Name: " + data.tracks.items[0].name)
+  });
+}
 
-//      * Venue location
+//Run a request with axios to the Bands In Town api to get the venue name, location, and date of an artist's upcoming concerts
+function concertThis(name){
+  if (name===""){
+    name="John Mayer";
+  }
+  axios.get("https://rest.bandsintown.com/artists/" + name + "/events?app_id=codingbootcamp").then(
+  function(response){
+    console.log("Venue: " + response.data[0].venue.name);
+    console.log("Location: " + response.data[0].venue.city + ", " 
+      + response.data[0].venue.region + ", " + response.data[0].venue.country);
+    console.log("Date: " + moment(response.data[0].datetime).format("MM/DD/YYYY"));
+  });
+}
 
-//      * Date of the Event (use moment to format this as "MM/DD/YYYY")
+// Run a request with axios to the OMDB API with the movie specified at http://www.omdbapi.com/?i=tt3896198 to get the 
+  //movie title, year, imdb rating, rotten tomatoes rating, country, language, plot, and actors
 
-//      What was the trick we went over in class to get arrays/objects to display cleanly 
-//         (or as clean as possible) in terminal?
-//      JSON.stringify(obj, null, 2);
-
-// 2. `node liri.js spotify-this-song '<song name here>'`
-// http://open.spotify.com/track/6rqhFgbbKwnb9MLmUQDhG6
-
-//    * This will show the following information about the song in your terminal/bash window
-
-//      * Artist(s)
-
-//      * The song's name
-
-// Then run a request with axios to the OMDB API with the movie specifiedttp://www.omdbapi.com/?i=tt3896198
 function omdbData(movie){
-  var omdbURL = 'http://www.omdbapi.com/?t=' + movie + '&plot=short&tomatoes=true';
+  if (movie===""){
+    movie="Mr Nobody" + "If you haven't watched 'Mr. Nobody,' then you should: <http://www.imdb.com/title/tt0485947/" + 
+    "It's on Netflix!";
+  }
+  axios.get("http://www.omdbapi.com/?t=" + movie + "&apikey=trilogy").then(
+  function(response){
+    console.log(response.data);
+    console.log("Title: " + response.data.Title);
+    console.log("Year: " + response.data.Year);
+    console.log("Rating: " + response.data.imdbRating);
+    console.log("Rotten Tomatoes Rating: " + response.data.Ratings[1].Value);
+    console.log("Country: " + response.data.Country);
+    console.log("Language: " + response.data.Language);
+    console.log("Plot: " + response.data.Plot);
+    console.log("Actors: " + response.data.Actors);
+    
+  });
+}
 
-  request(omdbURL, function (error, response, body){
-    if(!error && response.statusCode == 200) {
-      var body = JSON.parse(body);
-      // var queryUrl = "http://www.omdbapi.com/i=tt3896198" + movieName + "&apikey=ea24388d";
+function doThing(name){
+}
 
-    console.log("Title: " + body.Title)
-    console.log("Year: " + body.Year);
-    console.log("Rating: " + body.Rating);
-    console.log("Rotten Tomatoes Rating: " + body.tomatoRating);
-    console.log("Country: " + body.Country);
-    console.log("Language: " + body.Language);
-    console.log("Plot: " + body.Plot);
-    console.log("Actors: " + body.Actors);
-    } else{
-    console.log('Error occurred.')
-    }
-    if(movie === "Mr. Nobody"){
-      console.log("-----------------------");
-      console.log("If you haven't watched 'Mr. Nobody,' then you should: http://www.imdb.com/title/tt0485947/");
-      console.log("It's on Netflix!");
-    }
-  })
-};
+fs.readFile("random.txt", "utf8", function(err, data) {
+  if (err) {
+    return console.log(err);
+  }
 
-//    * If the user doesn't type a movie in, the program will output data for the movie 'Mr. Nobody.'
-
-//      * If you haven't watched "Mr. Nobody," then you should: <http://www.imdb.com/title/tt0485947/>
-
-//      * It's on Netflix!
-
-//    * You'll use the `axios` package to retrieve data from the OMDB API. Like all of the in-class activities, the OMDB API requires an API key. You may use `trilogy`.
-
+ });
 // 4. `node liri.js do-what-it-says`
 
 //    * Using the `fs` Node package, LIRI will take the text inside of random.txt and then use it to call one of LIRI's commands.
@@ -121,3 +92,36 @@ function omdbData(movie){
 //      * It should run `spotify-this-song` for "I Want it That Way," as follows the text in `random.txt`.
 
 //      * Edit the text in random.txt to test out the feature for movie-this and concert-this.
+unction doAsYerTold() {
+	// Append the command to the log file
+	fs.appendFile('./log.txt', 'User Command: node liri.js do-what-it-says\n\n', (err) => {
+		if (err) throw err;
+	});
+
+	// Read in the file containing the command
+	fs.readFile('./random.txt', 'utf8', function (error, data) {
+		if (error) {
+			console.log('ERROR: Reading random.txt -- ' + error);
+			return;
+		} else {
+			// Split out the command name and the parameter name
+			var cmdString = data.split(',');
+			var command = cmdString[0].trim();
+			var param = cmdString[1].trim();
+
+			switch(command) {
+				case 'my-tweets':
+					retrieveTweets(); 
+					break;
+
+				case 'spotify-this-song':
+					spotifySong(param);
+					break;
+
+				case 'movie-this':
+					retrieveOBDBInfo(param);
+					break;
+			}
+		}
+	});
+}
