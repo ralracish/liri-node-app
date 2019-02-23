@@ -9,25 +9,34 @@ var moment = require("moment");
 
 //Create commands and parameters
 var command=process.argv[2];
-var name=process.argv.slice(3).join(" ");
-console.log(command);
-console.log(name);
+  console.log(command);
+
+var name="";
+
+for (i = 3; i < process.argv.length; i++) {
+  if (i > 3) {
+      name = name + "+" + process.argv[i];
+  } else {
+      name = process.argv[i];
+  }
+}
 
 //Use switch to assign commands and functions
 switch(command){
   case "spotify-this-song":
-          spotifySong(name);
+        spotifySong(name);
   break;
-  case "movie-this":
-          omdbData(name);
-    break;
-    case "do-what-it-says":
-          doThing(name);
+  case  "movie-this":
+        omdbData(name);
   break;
-  case "concert-this":
-          concertThis(name);
+  case  "do-what-it-says":
+        doThing(name);
+  break;
+  case  "concert-this":
+        concertThis(name);
+  break;
   default:
-    console.log("{Please enter a command: spotify-this-song, movie-this, do-what-it-says}");
+    console.log("{Please enter a command: spotify-this-song, movie-this, concert-this, or do-what-it-says}");
   break;
 }
 
@@ -37,8 +46,8 @@ function spotifySong(name){
     if (err) {
       return console.log('Error occurred: ' + err);
     }
-    console.log("Artist: " + data.tracks.items[0].album.artists[0].name)
-    console.log("Song Name: " + data.tracks.items[0].name)
+    console.log("Artist: " + data.tracks.items[0].album.artists[0].name);
+    console.log("Song Name: " + data.tracks.items[0].name);
   });
 }
 
@@ -50,8 +59,7 @@ function concertThis(name){
   axios.get("https://rest.bandsintown.com/artists/" + name + "/events?app_id=codingbootcamp").then(
   function(response){
     console.log("Venue: " + response.data[0].venue.name);
-    console.log("Location: " + response.data[0].venue.city + ", " 
-      + response.data[0].venue.region + ", " + response.data[0].venue.country);
+    console.log("Location: " + response.data[0].venue.city + ", " + response.data[0].venue.region + ", " + response.data[0].venue.country);
     console.log("Date: " + moment(response.data[0].datetime).format("MM/DD/YYYY"));
   });
 }
@@ -61,12 +69,17 @@ function concertThis(name){
 
 function omdbData(movie){
   if (movie===""){
-    movie="Mr Nobody" + "If you haven't watched 'Mr. Nobody,' then you should: <http://www.imdb.com/title/tt0485947/" + 
-    "It's on Netflix!";
+    movie="Mr Nobody";
+    console.log("If you haven't watched 'Mr. Nobody,' then you should: <http://www.imdb.com/title/tt0485947/ It's on Netflix!");
+  } else {
+    movie=movie;
   }
-  axios.get("http://www.omdbapi.com/?t=" + movie + "&apikey=trilogy").then(
+    
+  var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&apikey=trilogy";
+    console.log(queryUrl);
+  axios.get(queryUrl).then(
   function(response){
-    console.log(response.data);
+    // console.log(response.data);
     console.log("Title: " + response.data.Title);
     console.log("Year: " + response.data.Year);
     console.log("Rating: " + response.data.imdbRating);
@@ -75,7 +88,6 @@ function omdbData(movie){
     console.log("Language: " + response.data.Language);
     console.log("Plot: " + response.data.Plot);
     console.log("Actors: " + response.data.Actors);
-    
   });
 }
 
