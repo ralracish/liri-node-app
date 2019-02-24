@@ -24,7 +24,7 @@ for (i = 3; i < process.argv.length; i++) {
 //Use switch to assign commands and functions
 switch(command){
   case  "concert-this":
-  concertThis(name);
+        concertThis(name);
   break;
   case "spotify-this-song":
         spotifySong(name);
@@ -161,3 +161,5 @@ function doThing() {
       }
   });
 };
+
+//Bootstrap Portfolio: https://ralracish.github.io/Bootstrap-Portfolio/portfolio.html
